@@ -18,6 +18,12 @@
   "The PATH of the `rg' executable.
 A warning is issued if it can't be found on loading.")
 
+;; TODO fix type so it can be nil (probably a choice)
+(defcustom company-rg-default-directory nil
+  "Default directory used when runing rg"
+  :group 'company-rg
+  :type '(string function))
+
 (defvar-local company-rg--debounce-state nil)
 
 (defun company-rg--prefix-to-string (prefix)
@@ -102,16 +108,23 @@ Use like:
            (shell-quote-argument "\\bnet([\\w_]|::)*\\b")
            " | sort | uniq -c | sort -r | awk '{print $2}'")))
 
+(defun company-rg-default-directory ()
+  "Compute default directory"
+  (or
+   (if (functionp company-rg-default-directory)
+       (funcall company-rg-default-directory)
+     company-rg-default-directory)
+   default-directory))
+
 (defun company-rg--candidates-query (prefix callback)
-  (let* ((line (line-number-at-pos (point)))
-         (col (+ 1 (current-column)))
+  (let* ((default-directory (company-rg-default-directory))
          (command
           (list "bash"
                 "-c"
                 (concat
                  "rg -ioIN "
                  (shell-quote-argument
-                  (concat "\\b" prefix "([\\w_]|::)*\\b"))
+                  (concat "\\b" prefix "([\\w_-]|::)*\\b"))
                  " | sort | uniq -c | sort -r | awk '{print $2}'")))
          (process-connection-type t)
          (process (apply 'start-process "company-rg" nil command)))
@@ -119,11 +132,6 @@ Use like:
     (set-process-filter process #'company-rg--receive-checker-output)
     (process-put process 'company-rg-callback callback)
     (process-put process 'company-rg-prefix prefix)))
-
-;; (company-rg--candidates-query
-;;  "co"
-;;  (lambda (&rest args)
-;;    (message "DONE %S" args)))
 
 ;;;###autoload
 (defun company-rg (command &optional arg &rest _args)
