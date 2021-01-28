@@ -119,15 +119,13 @@ Use like:
 (defun company-rg--candidates-query (prefix callback)
   (let* ((default-directory (company-rg-default-directory))
          (command
-          (list "bash"
-                "-c"
-                (concat
-                 "rg -ioIN "
-                 (shell-quote-argument
-                  (concat "(^|\\s+)" prefix "([\\w_-]|::)*\\b"))
-                 " | sort | uniq -c | sort -r | awk '{print $2}'")))
+          (concat
+           "rg -ioIN "
+           (shell-quote-argument
+            (concat "(^|\\s+)" prefix "([\\w_-]|::)*"))
+           " | sort | uniq -c | sort -r | awk '{print $2}'"))
          (process-connection-type t)
-         (process (apply 'start-process "company-rg" nil command)))
+         (process (start-process-shell-command "company-rg" nil command)))
     (set-process-sentinel process #'company-rg--handle-signal)
     (set-process-filter process #'company-rg--receive-checker-output)
     (process-put process 'company-rg-callback callback)
