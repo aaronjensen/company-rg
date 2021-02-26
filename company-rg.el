@@ -78,8 +78,9 @@ Use like:
 
 (defun company-rg--prefix ()
   "Grab prefix for rg."
-  (or (company-grab-symbol-cons "\\." 1)
-      'stop))
+  (and buffer-file-name
+       (or (company-grab-symbol-cons "\\." 1)
+           'stop)))
 
 (defun company-rg--receive-checker-output (process output)
   "Receive a syntax checking PROCESS OUTPUT."
