@@ -24,7 +24,13 @@ A warning is issued if it can't be found on loading.")
   :group 'company-rg
   :type '(string function))
 
+(defcustom company-rg-timeout-seconds 0.75
+  "Timeout for rg, the process will be killed if it runs longer."
+  :group 'company-rg
+  :type 'float)
+
 (defvar-local company-rg--debounce-state nil)
+(defvar company-rg--process nil)
 
 (defun company-rg--prefix-to-string (prefix)
   "Return a string or nil from a prefix.
@@ -83,6 +89,7 @@ Use like:
   (when (memq (process-status process) '(signal exit))
     (let ((callback (process-get process 'company-rg-callback))
           (prefix (process-get process 'company-rg-prefix)))
+      (setq company-rg--process nil)
       (if (and (eq (process-status process) 'exit)
                (eq (process-exit-status process) 0))
           (funcall callback (->> process
@@ -116,7 +123,15 @@ Use like:
      company-rg-default-directory)
    default-directory))
 
+(defun company-rg--kill-process (process)
+  "Kill running process as safely as possible."
+  (when (and process
+             (eq (process-status process) 'run))
+    (interrupt-process company-rg--process)
+    (kill-process company-rg--process)))
+
 (defun company-rg--candidates-query (prefix callback)
+  (company-rg--kill-process company-rg--process)
   (let* ((default-directory (company-rg-default-directory))
          (command
           (concat
@@ -126,6 +141,9 @@ Use like:
            " | sort | uniq -c | sort -r | awk '{print $2}'"))
          (process-connection-type t)
          (process (start-process-shell-command "company-rg" nil command)))
+    (setq company-rg--process process)
+    (run-with-timer company-rg-timeout-seconds nil
+                    'company-rg--kill-process process)
     (set-process-sentinel process #'company-rg--handle-signal)
     (set-process-filter process #'company-rg--receive-checker-output)
     (process-put process 'company-rg-callback callback)
