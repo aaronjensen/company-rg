@@ -94,11 +94,7 @@ Use like:
       (apply #'concat (nreverse pending-output)))))
 
 (defun company-rg-ignore-me ()
-  (shell-command-to-string
-   (concat (executable-find "rg")
-           " -ioIN "
-           (shell-quote-argument "\\bnet([\\w_]|::)*\\b")
-           " | awk '{print $1}' | sort | uniq -c | sort -r | awk '{print $2}'")))
+  (shell-command-to-string (company-rg--command "Test")))
 
 (defun company-rg-default-directory ()
   "Compute default directory"
@@ -115,15 +111,17 @@ Use like:
     (interrupt-process company-rg--process)
     (kill-process company-rg--process)))
 
+(defun company-rg--command (prefix)
+  (concat
+   "rg -ioIN "
+   (shell-quote-argument
+    (concat "(^|\\s|\\.)" prefix "([\\w_-]|::)*"))
+   " | awk '{print $1}' | sed 's/^\\.//' | sort | uniq -c | sort -r | awk '{print $2}'"))
+
 (defun company-rg--candidates-query (prefix callback)
   (company-rg--kill-process company-rg--process)
   (let* ((default-directory (company-rg-default-directory))
-         (command
-          (concat
-           "rg -ioIN "
-           (shell-quote-argument
-            (concat "(^|\\s)" prefix "([\\w_-]|::)*"))
-           " | awk '{print $1}' | sort | uniq -c | sort -r | awk '{print $2}'"))
+         (command (company-rg--command prefix))
          (process-connection-type t)
          (process (start-process-shell-command "company-rg" nil command)))
     (setq company-rg--process process)
