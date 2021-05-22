@@ -98,7 +98,7 @@ Use like:
    (concat (executable-find "rg")
            " -ioIN "
            (shell-quote-argument "\\bnet([\\w_]|::)*\\b")
-           " | sort | uniq -c | sort -r | awk '{print $2}'")))
+           " | awk '{print $1}' | sort | uniq -c | sort -r | awk '{print $2}'")))
 
 (defun company-rg-default-directory ()
   "Compute default directory"
@@ -123,7 +123,7 @@ Use like:
            "rg -ioIN "
            (shell-quote-argument
             (concat "(^|\\s+)" prefix "([\\w_-]|::)*"))
-           " | sort | uniq -c | sort -r | awk '{print $2}'"))
+           " | awk '{print $1}' | sort | uniq -c | sort -r | awk '{print $2}'"))
          (process-connection-type t)
          (process (start-process-shell-command "company-rg" nil command)))
     (setq company-rg--process process)
