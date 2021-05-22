@@ -32,24 +32,8 @@ A warning is issued if it can't be found on loading.")
 (defvar-local company-rg--debounce-state nil)
 (defvar company-rg--process nil)
 
-(defun company-rg--prefix-to-string (prefix)
-  "Return a string or nil from a prefix.
-  `company-grab-symbol-cons' can return (\"prefix\" . t) or just
-  \"prefix\", but we only care about the string."
-  (if (consp prefix)
-      (car prefix)
-    prefix))
-
 (defun company-rg--string-prefix-p (a b)
-  (string-prefix-p (company-rg--prefix-to-string a) (company-rg--prefix-to-string b)))
-
-(defun company-rg--prefix-to-string (prefix)
-  "Return a string or nil from a prefix.
-  `company-grab-symbol-cons' can return (\"prefix\" . t) or just
-  \"prefix\", but we only care about the string."
-  (if (consp prefix)
-      (car prefix)
-    prefix))
+  (string-prefix-p a b))
 
 (defun company-rg--debounce-callback (prefix callback)
   (lambda (candidates)
@@ -74,13 +58,13 @@ Use like:
       (unless (and current-prefix
                    (company-rg--string-prefix-p prefix current-prefix))
         (funcall candidate-fn prefix (company-rg--debounce-callback prefix callback)))
-      (setq company-rg--debounce-state (cons (company-rg--prefix-to-string prefix) callback)))))
+      (setq company-rg--debounce-state (cons prefix callback)))))
 
 (defun company-rg--prefix ()
   "Grab prefix for rg."
-  (and buffer-file-name
-       (or (company-grab-symbol-cons "\\." 1)
-           'stop)))
+  (let ((prefix (company-grab-symbol)))
+    (unless (string-empty-p prefix)
+      prefix)))
 
 (defun company-rg--receive-checker-output (process output)
   "Receive a syntax checking PROCESS OUTPUT."
