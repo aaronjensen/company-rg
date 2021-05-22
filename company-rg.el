@@ -122,7 +122,7 @@ Use like:
           (concat
            "rg -ioIN "
            (shell-quote-argument
-            (concat "(^|\\s+)" prefix "([\\w_-]|::)*"))
+            (concat "(^|\\s)" prefix "([\\w_-]|::)*"))
            " | awk '{print $1}' | sort | uniq -c | sort -r | awk '{print $2}'"))
          (process-connection-type t)
          (process (start-process-shell-command "company-rg" nil command)))
