@@ -70,6 +70,15 @@ Use like:
   "Receive a syntax checking PROCESS OUTPUT."
   (push output (process-get process 'company-rg-pending-output)))
 
+(defun company-rg--parse-output (output)
+  (split-string output "\n"))
+
+(defun company-rg--get-output (process)
+  "Get the complete output of PROCESS."
+  (with-demoted-errors "Error while retrieving process output: %S"
+    (let ((pending-output (process-get process 'company-rg-pending-output)))
+      (apply #'concat (nreverse pending-output)))))
+
 (defun company-rg--handle-signal (process _event)
   (when (memq (process-status process) '(signal exit))
     (let ((callback (process-get process 'company-rg-callback))
@@ -83,15 +92,6 @@ Use like:
                                  ;; Remove nils
                                  (--filter it)))
         (funcall callback nil)))))
-
-(defun company-rg--parse-output (output)
-  (split-string output "\n"))
-
-(defun company-rg--get-output (process)
-  "Get the complete output of PROCESS."
-  (with-demoted-errors "Error while retrieving process output: %S"
-    (let ((pending-output (process-get process 'company-rg-pending-output)))
-      (apply #'concat (nreverse pending-output)))))
 
 (defun company-rg-ignore-me ()
   (shell-command-to-string (company-rg--command "Test")))
