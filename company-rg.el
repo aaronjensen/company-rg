@@ -3,7 +3,8 @@
 ;;; Code:
 
 (eval-when-compile
-  (require 'cl-macs))
+  (require 'cl-macs)
+  (require 'dash))
 (require 'company)
 
 (defgroup company-rg ()
