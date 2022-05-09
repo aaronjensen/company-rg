@@ -145,7 +145,7 @@ Use like:
    "rg -ioIN "
    (shell-quote-argument
     (concat "(^|\\s|\\.)" prefix "([\\w_-]|::)*"))
-   " | awk '{print $1}' | sed 's/^\\.//' | sort | uniq -c | sort -r | awk '{print $2}'"))
+   " | awk '{print $1}' | sed 's/^\\.//' | sort | uniq -c | sort -rn | awk '{print $2}'"))
 
 (defun company-rg--candidates-query (prefix callback)
   (company-rg--kill-process company-rg--process)
