@@ -122,9 +122,6 @@ Use like:
     (let ((pending-output (process-get process 'company-rg-pending-output)))
       (apply #'concat (nreverse pending-output)))))
 
-(defun company-rg-ignore-me ()
-  (shell-command-to-string (company-rg--command "Test")))
-
 (defun company-rg-default-directory ()
   "Compute default directory"
   (or
