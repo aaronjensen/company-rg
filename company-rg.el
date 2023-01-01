@@ -61,15 +61,12 @@ A warning is issued if it can't be found on loading.")
 (defvar-local company-rg--debounce-state nil)
 (defvar company-rg--process nil)
 
-(defun company-rg--string-prefix-p (a b)
-  (string-prefix-p a b))
-
 (defun company-rg--debounce-callback (prefix callback)
   (lambda (candidates)
     (let ((current-prefix (car company-rg--debounce-state))
           (current-callback (cdr company-rg--debounce-state)))
       (when (and current-prefix
-                 (company-rg--string-prefix-p prefix current-prefix))
+                 (string-prefix-p current-prefix prefix))
         (setq company-rg--debounce-state nil)
         (funcall current-callback (all-completions current-prefix candidates))))))
 
@@ -85,7 +82,7 @@ Use like:
   (lambda (callback)
     (let ((current-prefix (car company-rg--debounce-state)))
       (unless (and current-prefix
-                   (company-rg--string-prefix-p prefix current-prefix))
+                   (string-prefix-p current-prefix prefix))
         (funcall candidate-fn prefix (company-rg--debounce-callback prefix callback)))
       (setq company-rg--debounce-state (cons prefix callback)))))
 
